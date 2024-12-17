@@ -1,2 +1,0 @@
-POLYGON_API_KEY = "15enpzPut2lhVxCiheR9nlW8tZPBgypi"
-POLYGON_API_ADJUSTED = "true"
