@@ -1,3 +1,4 @@
+# Stock market prices on 2023-12-16 / YYYY-MM-DD
 SANDBOX_STOCK_MARKET = {
     "queryCount": 10836,
     "resultsCount": 10836,

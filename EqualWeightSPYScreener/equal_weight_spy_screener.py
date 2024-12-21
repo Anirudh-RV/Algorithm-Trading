@@ -9,12 +9,50 @@ from constants import sandbox
 from SPYData import stocks_data as spy
 
 
-def equal_weight_spy_portfolio(portfolio_size: float, sandbox: bool = False):
+def append_additional_stats(
+    spy_stock_dataframe: pd.DataFrame,
+    portfolio_amount: float,
+    capital_invested: float,
+) -> None:
     """
-    Converts the list of stocks into a dictionary for quick look up
+    Does in place update of the spy_stock_dataframe to add additional statistics of the portfolio
 
     Args:
-        portfolio_size(float): The '$' amount of the portfolio
+        spy_stock_dataframe (pd.DataFrame): The DataFrame to be modified
+        portfolio_amount (float): The portfolio amount
+        capital_invested (float): The total capital invested
+
+    Returns:
+        None
+        In place change to DataFrame
+    """
+
+    spy_stock_dataframe.loc[len(spy_stock_dataframe)] = [
+        "Total Capital:",
+        portfolio_amount,
+        "",
+        "",
+    ]
+    spy_stock_dataframe.loc[len(spy_stock_dataframe)] = [
+        "Capital invested:",
+        round(capital_invested, 2),
+        "",
+        "",
+    ]
+    spy_stock_dataframe.loc[len(spy_stock_dataframe)] = [
+        "Capital remaining:",
+        round(portfolio_amount - capital_invested, 2),
+        "",
+        "",
+    ]
+
+
+def equal_weight_spy_portfolio(portfolio_amount: float, sandbox: bool = False):
+    """
+    Equal weight SPY portfolio
+
+    Args:
+        portfolio_amount(float): The '$' amount of the portfolio
         sandbox(bool): If we should use the sandbox or not
 
     Returns:
@@ -26,7 +64,7 @@ def equal_weight_spy_portfolio(portfolio_size: float, sandbox: bool = False):
         print("Could not get the SPY Stock data")
         return
 
-    position_size = portfolio_size / len(spy_stock_dataframe)
+    position_size = portfolio_amount / len(spy_stock_dataframe)
 
     capital_invested = 0
     for index, row in spy_stock_dataframe.iterrows():
@@ -39,26 +77,10 @@ def equal_weight_spy_portfolio(portfolio_size: float, sandbox: bool = False):
             2,
         )
 
-    spy_stock_dataframe.loc[len(spy_stock_dataframe)] = [
-        "Total Capital:",
-        portfolio_size,
-        "",
-        "",
-    ]
-    spy_stock_dataframe.loc[len(spy_stock_dataframe)] = [
-        "Capital invested:",
-        round(capital_invested, 2),
-        "",
-        "",
-    ]
-    spy_stock_dataframe.loc[len(spy_stock_dataframe)] = [
-        "Capital remaining:",
-        round(portfolio_size - capital_invested, 2),
-        "",
-        "",
-    ]
+    append_additional_stats(
+        spy_stock_dataframe=spy_stock_dataframe,
+        portfolio_amount=portfolio_amount,
+        capital_invested=capital_invested,
+    )
 
     spy_stock_dataframe.to_csv("S&P 500 Recommendations.csv", index=False)
-
-
-equal_weight_spy_portfolio(portfolio_size=10000000, sandbox=sandbox)

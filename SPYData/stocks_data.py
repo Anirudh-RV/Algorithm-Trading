@@ -13,6 +13,8 @@ import requests
 from constants import POLYGON_API_ADJUSTED, POLYGON_API_KEY
 from SPYData.market_cap_list import MARKET_CAP
 from SPYData.ticker_symbols import spy_tickers
+from StockMarketData.market_information import (
+    convert_stock_list_to_dictionary, stock_market_stocks)
 from StockMarketData.stock_market_default_prices import SANDBOX_STOCK_MARKET
 
 
@@ -55,19 +57,6 @@ def spy_ticker_market_cap(
             return 0.0, False
 
 
-def _convert_stock_list_to_dictionary(stock_market_list: list) -> dict:
-    """
-    Converts the list of stocks into a dictionary for quick look up
-
-    Args:
-        stock_market_list(list): The list of stock information
-
-    Returns:
-        dict: The same data in dictionary form for quick access
-    """
-    return {stock_data["T"]: stock_data for stock_data in stock_market_list}
-
-
 def spy_stock_data(sandbox: bool = False) -> Tuple[pd.DataFrame, bool]:
     """
     Provides the SPY stocks data
@@ -88,10 +77,12 @@ def spy_stock_data(sandbox: bool = False) -> Tuple[pd.DataFrame, bool]:
     stock_market_data = SANDBOX_STOCK_MARKET
     if not sandbox:
         last_date = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
-        response = requests.get(
-            f"https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/{last_date}?adjusted={POLYGON_API_ADJUSTED}&apiKey={POLYGON_API_KEY}"
+        stock_market_data, status = stock_market_stocks(
+            date=last_date, sandbox=sandbox
         )
-        stock_market_data = response.json()
+        if not status:
+            print("Issue getting stock market information")
+            return pd.DataFrame(), False
 
     spy_tickers_data_frame, status = spy_tickers()
     if not status:
@@ -105,7 +96,7 @@ def spy_stock_data(sandbox: bool = False) -> Tuple[pd.DataFrame, bool]:
         "Number of Shares to Purchase",
     ]
     spy_data_frame = pd.DataFrame(columns=dataframe_columns)
-    stock_market_dictionary = _convert_stock_list_to_dictionary(
+    stock_market_dictionary = convert_stock_list_to_dictionary(
         stock_market_list=stock_market_data["results"]
     )
 

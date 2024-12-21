@@ -7,9 +7,47 @@ from typing import Tuple
 sys.path.append(os.path.abspath(".."))
 
 import requests
-from stock_market_default_prices import SANDBOX_STOCK_MARKET
 
 from constants import POLYGON_API_ADJUSTED, POLYGON_API_KEY
+from StockMarketData.stock_market_default_prices import SANDBOX_STOCK_MARKET
+
+
+def convert_stock_list_to_dictionary(stock_market_list: list) -> dict:
+    """
+    Converts the list of stocks into a dictionary for quick look up
+
+    Args:
+        stock_market_list(list): The list of stock information
+
+    Returns:
+        dict: The same data in dictionary form for quick access
+    """
+    return {stock_data["T"]: stock_data for stock_data in stock_market_list}
+
+
+def stock_market_stocks(date: str, sandbox: bool = False) -> Tuple[dict, bool]:
+    """
+    Provides the stock market information for a particular date
+    If, sandbox, the function will return the stock market price for a default date
+    Defaults to sandbox=False
+
+    Args:
+        date (str): The date for the stock market data.
+        sandbox (bool): If we need to use sandbox.
+
+    Returns:
+        Tuple[dict, bool]: Stock market data and a Status
+    """
+    if sandbox:
+        return SANDBOX_STOCK_MARKET
+    try:
+        response = requests.get(
+            f"https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/{date}?adjusted={POLYGON_API_ADJUSTED}&apiKey={POLYGON_API_KEY}"
+        )
+        return response.json(), True
+    except Exception:
+        print(traceback.format_exc())
+        return dict(), False
 
 
 def ticker_stock_price_data(
